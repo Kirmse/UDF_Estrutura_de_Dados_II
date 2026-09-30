@@ -1,158 +1,481 @@
-# Game Design Document Briefing — Laboratório AVL
+# 🌳 Jogo Didático BTREE de jrenner
 
-**Disciplina:** Estruturas de Dados II • Ciência da Computação
-**Tema:** Design de Jogos Educativos sobre Árvores Avançadas por meio da Engenharia Reversa e Reuso de Modelos
+Projeto desenvolvido para a disciplina de **Estruturas de Dados II**, do curso de **Ciência da Computação**, a partir do reuso e aprimoramento do projeto `graphical-binary-trees`, desenvolvido por **jrenner**.
 
-## 1. Identificação do Grupo
-
-**Integrantes do Grupo:** _(preencher)_
-**Data:** ____ / ____ / 2026  **Turma:** Ciência da Computação
+O projeto transforma uma **Árvore Binária de Busca (ABB)** em uma experiência interativa de aprendizagem sobre **Árvores AVL**, permitindo que o estudante insira chaves, identifique situações de desbalanceamento e execute rotações para restaurar a propriedade de balanceamento da árvore.
 
 ---
 
-## 4.1 Diagnóstico do Modelo Reutilizado
+## 📚 1. Contexto do Projeto
 
-**Nome do Jogo/Ferramenta Base:** *graphical-binary-trees* (jrenner), visualizador de Árvore Binária de Busca em Python/pygame
-— <https://github.com/jrenner/graphical-binary-trees>
+### Tema
 
-**Como o modelo original funciona (análise do código-fonte):** gera uma ABB aleatória de 100 nós, desenha a árvore na tela e permite apenas navegar pelos nós com as setas (filho esquerdo, filho direito, pai), mover a câmera com as teclas WASD e gerar outra árvore aleatória com a tecla R. Mostra somente o valor e a profundidade do nó selecionado.
+**Design de Jogos Educativos sobre Árvores Avançadas por meio da Engenharia Reversa e Reuso de Modelos**
 
-**Limitações didáticas e técnicas identificadas:**
+### Objetivo
 
-1. **Usuário passivo.** Ele só observa e navega; não toma nenhuma decisão nem executa operações sobre a árvore.
-2. **Não há inserção pelo usuário.** A árvore só muda quando é descartada e regenerada aleatoriamente (tecla R), então não se vê o efeito de uma inserção específica.
-3. **Sem balanceamento.** É uma ABB comum: não calcula Fator de Balanceamento, não tem rotações e não há nenhuma noção de árvore "boa" ou "ruim". A ordem de inserção pode degenerar a estrutura em lista (O(n)) sem qualquer consequência.
-4. **Sem objetivo, feedback ou derrota.** Nada indica se a árvore está em um bom ou mau estado, nem que o pior caso da busca foi atingido.
-5. **Navegação pouco prática.** A câmera só se move com teclado, não há zoom, e a posição dos nós é calculada uma única vez (layout não reage a mudanças de estrutura).
-6. **Código em Python 2**, incompatível com as versões atuais sem adaptação.
+O projeto tem como objetivo transformar conceitos teóricos de **Estruturas de Dados II**, especialmente aqueles relacionados a **Árvores AVL**, em mecânicas interativas de jogo.
 
-## 4.2 Seleção da Estrutura de ED II para o Upgrade
+A proposta parte de uma implementação existente de uma **Árvore Binária de Busca** e adiciona mecanismos de:
 
-- [x] **Árvore AVL:** Foco no Fator de Balanceamento FB em {-1, 0, 1} e execução de Rotações Simples/Duplas.
-- [ ] Árvore Rubro-Negra
-- [ ] Árvore B / B+
+* cálculo do Fator de Balanceamento;
+* identificação de nós críticos;
+* rotações simples e duplas;
+* inserção de chaves pelo jogador;
+* feedback imediato;
+* sistema de estabilidade;
+* condição de vitória e derrota;
+* comparação entre o custo ideal e o pior caso de busca.
 
-## 4.3 Mapeamento de Conceitos em Mecânicas de Gameplay
+Dessa forma, o estudante deixa de ser apenas espectador da estrutura e passa a participar diretamente de sua manutenção.
 
-| Conceito Teórico de ED II | Elemento / Mecânica Correspondente no Jogo |
-| --- | --- |
-| **Nó da Árvore / Chave** | Cada chave é um círculo numerado. No modo jogo, as chaves chegam por uma **fila** ("próxima" em destaque) e são inseridas pelas regras da ABB (menor à esquerda, maior à direita, sem duplicados). |
-| **Altura da Árvore (h)** | Mostrada no painel junto com o **custo da busca no pior caso (h + 1 comparações)** e o valor ideal (⌈log₂(n+1)⌉). No modo jogo existe um **teto do cenário** (linha tracejada): a altura máxima possível de uma AVL com *n* nós, mais 1 nível de tolerância. Convenção da apostila: folha = 0, árvore vazia = -1. |
-| **Fator de Balanceamento** | Número acima de cada nó, **FB = altura(esq) − altura(dir)**. Verde quando \|FB\| ≤ 1; nó vermelho pulsante quando \|FB\| ≥ 2. Há também a **barra de Estabilidade** (3 pontos) do jogador. |
-| **Operação de Correção (Rotação)** | Habilidades do jogador no nó selecionado: **A** = rotação à esquerda, **D** = rotação à direita. A rotação **simples** usa 1 habilidade e a **dupla** (casos Esquerda-Direita e Direita-Esquerda) usa 2 em sequência. A escolha do nó e do tipo de rotação é do jogador. |
+---
 
-**Regra de decisão ensinada (convenção FB = h(esq) − h(dir)):**
+# 2. Identificação do Modelo Base
 
-| Nó crítico | Filho | Caso | Correção |
-| --- | --- | --- | --- |
-| FB = +2 | filho esquerdo com FB ≥ 0 | Esquerda-Esquerda | rotação simples à direita no nó |
-| FB = +2 | filho esquerdo com FB = −1 | Esquerda-Direita | rotação à esquerda no filho, depois à direita no nó |
-| FB = −2 | filho direito com FB ≤ 0 | Direita-Direita | rotação simples à esquerda no nó |
-| FB = −2 | filho direito com FB = +1 | Direita-Esquerda | rotação à direita no filho, depois à esquerda no nó |
+**Nome:** `graphical-binary-trees`
 
-## 4.4 Regras do Core Loop e Condições do Jogo
+**Autor:** jrenner
 
-**Core Loop (o que o jogador faz repetidamente):**
+**Repositório:**
+https://github.com/jrenner/graphical-binary-trees
 
-1. Recebe a próxima chave *k* da fila e a insere na árvore (**Enter**); a inserção de ABB é feita pelo jogo.
-2. A árvore se redistribui automaticamente na tela e o FB de todos os nós é recalculado.
-3. O jogador avalia o FB e localiza o **nó crítico** (o mais fundo com \|FB\| = 2).
-4. Classifica o caso (EE, DD, ED ou DE) e escolhe a(s) rotação(ões) (**A** / **D**) no nó certo.
-5. Recebe **feedback imediato** ("Correto!", "Piorou", "falta a 2ª rotação") e repete até a árvore ficar válida.
-6. Só então insere a próxima chave.
+**Tecnologia:** Python / Pygame
 
-**Condição de Vitória:** inserir toda a fila (15 chaves) e terminar com **todos os nós com \|FB\| ≤ 1** (AVL válida), com estabilidade maior que zero. Menos rotações = melhor pontuação.
+O projeto original é um visualizador de **Árvore Binária de Busca**, permitindo visualizar uma árvore gerada automaticamente e navegar entre seus nós.
 
-**Condição de Derrota (falha associada à degradação algorítmica):**
+---
 
-- **Estabilidade zero:** inserir uma nova chave com a árvore ainda desbalanceada custa 1 dos 3 pontos de estabilidade; ao zerar, a árvore desmorona.
-- **Teto ultrapassado:** se a altura da árvore passar do teto (altura máxima de uma AVL com *n* nós + 1), a estrutura virou praticamente uma **lista encadeada** e a busca degradou para **O(n)**: o cenário desmorona. (A tolerância de +1 existe porque uma única inserção em uma AVL válida pode elevar a altura em 1 nível antes da correção.)
+## 2.1 Funcionamento do Modelo Original
 
-**Modos disponíveis no protótipo:**
+A implementação original:
 
-- **Modo Livre** (evolução direta do modelo base): árvore aleatória (tecla R), campo de texto para inserir qualquer número, rotações manuais e dicas. Existe também a opção **AVL automática**, desligada por padrão, que serve só como *demonstração* para comparar o resultado correto; ela não é usada no jogo para não tornar o jogador passivo.
-- **Modo Jogo:** fila de chaves, estabilidade, teto do cenário, vitória e derrota.
+* gera uma ABB aleatória com 100 nós;
+* apresenta a árvore graficamente;
+* permite navegar entre pai, filho esquerdo e filho direito;
+* permite movimentar a câmera utilizando as teclas **WASD**;
+* permite gerar uma nova árvore aleatória utilizando **R**;
+* apresenta informações básicas do nó selecionado, como valor e profundidade.
 
-## Melhorias de usabilidade (além da mecânica)
+Apesar de permitir visualizar a estrutura, o usuário possui pouca participação sobre o estado da árvore.
 
-- **Mouse:** arrastar para mover a tela, *scroll* para zoom (centrado no cursor) e clique para selecionar nós, em vez de WASD.
-- **Campo de texto no topo** para inserir números.
-- **Distribuição automática:** os nós se reposicionam sozinhos, com animação, a cada inserção ou rotação (posição horizontal pela ordem simétrica e vertical pela profundidade), sem sobreposição.
-- **Dica (H)** que indica o caso e a rotação correta, e **enquadrar (F)** para ver a árvore inteira.
+---
 
-## 5. Checklist de Autoavaliação do Grupo
+# 3. Diagnóstico do Modelo Reutilizado
 
-- [x] Identificamos e citamos o jogo/modelo base existente (*graphical-binary-trees*, jrenner).
-- [x] O upgrade exige a aplicação prática de conceitos de ED II (AVL: FB, rotações simples e duplas).
-- [x] As propriedades algorítmicas (FB) estão traduzidas em mecânicas ativas de jogo (nó em alerta, rotação pelo jogador, estabilidade).
-- [x] A condição de derrota está associada ao pior caso de complexidade (árvore degenerando em lista, O(n)).
-- [ ] O grupo está preparado para realizar a defesa do projeto em um Pitch de 3 minutos.
+## 3.1 Limitações Identificadas
 
-## Roteiro do Pitch (3 minutos)
+A análise do modelo original permitiu identificar as seguintes limitações:
 
-1. **Problema (40 s):** o *graphical-binary-trees* mostra uma ABB, mas o aluno só assiste; não há inserção, balanceamento nem consequência para uma árvore ruim.
-2. **Como a AVL aparece (60 s):** FB em cada nó, vermelho quando chega a ±2, e o jogador aplica as rotações; explicar os 4 casos.
-3. **Demonstração (60 s):** inserir 10, 20, 30 em ordem, mostrar o caso Direita-Direita e corrigir com uma rotação à esquerda; depois mostrar a derrota ao ignorar o desbalanceamento.
-4. **Aprendizado (20 s):** o jogador enxerga por que a árvore precisa ser balanceada: O(log n) contra O(n).
+### 1. Usuário passivo
 
-## Como executar o protótipo
+O usuário apenas observa e navega pela árvore. Não existem operações que exijam decisões relacionadas à manutenção da estrutura.
 
+### 2. Ausência de inserção controlada
+
+A árvore é gerada aleatoriamente. O usuário não consegue inserir uma chave específica e observar o efeito daquela inserção na estrutura.
+
+### 3. Ausência de balanceamento
+
+O modelo utiliza uma ABB convencional e não possui:
+
+* Fator de Balanceamento;
+* detecção de desequilíbrio;
+* rotações;
+* mecanismo de correção;
+* consequência para árvores degeneradas.
+
+Assim, uma sequência desfavorável de inserções pode fazer a árvore se aproximar de uma estrutura linear, degradando o custo da busca para **O(n)**.
+
+### 4. Ausência de objetivo didático
+
+O modelo não apresenta uma condição clara de vitória, derrota ou desempenho relacionada à qualidade estrutural da árvore.
+
+### 5. Limitações de navegação
+
+A movimentação da câmera é realizada pelo teclado e não havia mecanismos como zoom pelo mouse ou seleção direta dos nós.
+
+### 6. Código originalmente desenvolvido em Python 2
+
+A implementação original utiliza recursos de Python 2, sendo necessária adaptação para execução em versões atuais do Python.
+
+---
+
+# 4. Estrutura Selecionada para o Upgrade
+
+## 🌳 Árvore AVL
+
+A estrutura escolhida para o upgrade foi a **Árvore AVL**.
+
+A AVL mantém a propriedade de uma Árvore Binária de Busca, mas adiciona uma restrição de balanceamento:
+
+> Para cada nó, a diferença entre as alturas das subárvores esquerda e direita deve pertencer ao conjunto `{−1, 0, +1}`.
+
+O **Fator de Balanceamento (FB)** utilizado no projeto é definido por:
+
+```text
+FB = altura(esquerda) − altura(direita)
 ```
-python btree_avl.py
+
+Quando:
+
+```text
+|FB| ≤ 1
 ```
 
-Requisitos: Python 3 e `pygame` (`pip install pygame`).
-**Mouse:** arrastar = mover • scroll = zoom • clique = selecionar. **Teclado:** setas = navegar • A/D = rotação à esquerda/direita • Enter = inserir • H = dica • F = enquadrar • R = aleatória/reiniciar • C = limpar • G = modo jogo/livre • T = AVL automática • Q/Esc = sair.
+o nó está balanceado.
 
-## Créditos e alterações sobre o modelo base
+Quando:
 
-**Autor do modelo base:** jrenner — <https://github.com/jrenner/graphical-binary-trees>.
-A ideia original (visualizar uma ABB em pygame e navegar por seus nós) e o código do arquivo `btree.py` original são dele; este projeto reaproveita essa proposta e a estende.
+```text
+|FB| ≥ 2
+```
 
-**Arquivos deste repositório:**
+o nó está desbalanceado e precisa ser corrigido.
 
-| Arquivo | O que é |
-| --- | --- |
-| `btree.py` | Código **original do jrenner**, apenas **portado de Python 2 para Python 3** (sem mudar o comportamento). Cada alteração está marcada com `# CORRIGIDO`. |
-| `btree_avl.py` | **Upgrade do grupo (Laboratório AVL).** É uma nova implementação que parte da proposta do original e acrescenta a AVL e o modo jogo. |
-| `GDD_Laboratorio_AVL.md` | Este documento. |
+---
 
-**Ajustes feitos no `btree.py` para rodar em Python 3:**
+# 5. Mapeamento dos Conceitos em Mecânicas de Gameplay
 
-- `print "texto"` trocado por `print("texto")` (em Python 3 o `print` é função).
-- Divisões `/` trocadas por `//` (a raiz valia 50.0, um decimal, em vez de 50).
-- Bug corrigido: o valor 0 era tratado como "nó vazio" (`if not leaf.cargo` passou a ser `if leaf.cargo is None`), o que podia sobrescrever o nó de valor 0.
-- O valor da raiz (50) deixou de entrar no sorteio, eliminando o aviso de "duplicate cargo".
-- Programa principal colocado dentro de `if __name__ == "__main__":`.
+| Conceito de Estruturas de Dados | Mecânica no jogo                                                                                   |    |                      |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- | -- | -------------------- |
+| **Nó / Chave**                  | Cada chave é representada por um círculo numerado na árvore.                                       |    |                      |
+| **Árvore Binária de Busca**     | Chaves menores são posicionadas à esquerda e maiores à direita, sem duplicação.                    |    |                      |
+| **Altura**                      | A altura dos nós é calculada e utilizada para determinar o Fator de Balanceamento.                 |    |                      |
+| **Fator de Balanceamento**      | Exibido acima dos nós e utilizado para identificar situações de desequilíbrio.                     |    |                      |
+| **Nó crítico**                  | Nó cujo `                                                                                          | FB | `atingiu`2` ou mais. |
+| **Rotação**                     | Operação executada pelo jogador para corrigir o desequilíbrio.                                     |    |                      |
+| **Estabilidade**                | Recurso limitado que representa a capacidade do jogador de manter a árvore em condições adequadas. |    |                      |
+| **Teto de altura**              | Limite utilizado para representar a degradação da estrutura.                                       |    |                      |
+| **Custo de busca**              | O custo no pior caso é apresentado em função da altura da árvore.                                  |    |                      |
 
-**O que o upgrade (`btree_avl.py`) mantém do original:**
+---
 
-- ABB desenhada na tela, com a regra "menor à esquerda, maior à direita" e sem duplicados.
-- Navegação pelas setas (filho esquerdo, filho direito e pai) e nó selecionado com destaque.
-- Informações do nó selecionado (valor e profundidade).
-- Tecla **R** para gerar uma árvore aleatória.
+# 6. Regras de Balanceamento
 
-**O que foi alterado em relação ao original:**
+O jogo utiliza quatro situações fundamentais de desequilíbrio.
 
-| Original (jrenner) | Upgrade |
-| --- | --- |
-| Árvore aleatória de 100 nós | 40 nós por padrão (constante `NUM_OF_NODES`) |
-| Mover a câmera com as teclas WASD | Arrastar com o mouse e zoom com o scroll |
-| Posição dos nós calculada uma única vez, ao criar a árvore | Distribuição automática: recalculada a cada inserção e rotação, com animação |
-| Nós desenhados como caixas | Nós como círculos, com o Fator de Balanceamento acima de cada um |
+| Fator no nó crítico | Fator no filho | Caso              | Operação                                              |
+| ------------------: | -------------: | ----------------- | ----------------------------------------------------- |
+|                `+2` |          `≥ 0` | Esquerda-Esquerda | Rotação simples à direita                             |
+|                `+2` |           `−1` | Esquerda-Direita  | Rotação à esquerda no filho + rotação à direita no nó |
+|                `−2` |          `≤ 0` | Direita-Direita   | Rotação simples à esquerda                            |
+|                `−2` |           `+1` | Direita-Esquerda  | Rotação à direita no filho + rotação à esquerda no nó |
 
-**O que foi acrescentado (não existia no original):**
+Essas regras transformam diretamente o conceito teórico de balanceamento em decisões que precisam ser tomadas durante o jogo.
 
-- Campo de texto no topo para inserir números.
-- Cálculo e exibição do Fator de Balanceamento e da altura de cada nó.
-- Rotações simples e duplas executadas pelo jogador (teclas A e D).
-- Dica (caso EE, DD, ED ou DE) e feedback após cada rotação.
-- Custo da busca no pior caso (h + 1) comparado ao ideal.
-- **Modo Jogo:** fila de chaves, estabilidade, teto de altura, vitória e derrota.
-- **AVL automática** (opcional, desligada por padrão) apenas para demonstração.
+---
 
-## Referências
+# 7. Core Loop
 
-- JRENNER. *graphical-binary-trees*. GitHub. <https://github.com/jrenner/graphical-binary-trees> (modelo base reutilizado).
-- CELES, W.; RANGEL, J. L. *Árvores* (cap. 13). Estruturas de Dados — PUC-Rio (definição de altura, percursos).
-- Material das aulas de Estruturas de Dados II (plano de aula de 11/09 e aula de 14/09).
+O ciclo principal do modo jogo é:
+
+1. O jogador recebe a próxima chave da fila.
+2. A chave é inserida na ABB utilizando as regras convencionais.
+3. A árvore é redistribuída visualmente.
+4. Os fatores de balanceamento são recalculados.
+5. O jogador identifica o nó crítico.
+6. O jogador determina qual dos quatro casos de rotação ocorreu.
+7. O jogador executa a rotação correta.
+8. O sistema fornece feedback sobre a ação.
+9. A árvore é recalculada.
+10. Quando todos os nós estiverem balanceados, uma nova chave pode ser inserida.
+
+O processo continua até que toda a sequência de chaves seja processada.
+
+---
+
+# 8. Condições do Jogo
+
+## 🏆 Vitória
+
+O jogador vence ao:
+
+* inserir todas as chaves da fila;
+* manter a árvore válida como AVL;
+* finalizar com todos os nós apresentando `|FB| ≤ 1`;
+* manter a estabilidade acima de zero.
+
+A quantidade de rotações também é utilizada como elemento de desempenho.
+
+---
+
+## ❌ Derrota
+
+Existem duas condições principais de derrota.
+
+### Estabilidade zerada
+
+O jogador possui três pontos de estabilidade.
+
+Inserir uma nova chave enquanto a árvore ainda estiver desbalanceada consome um ponto de estabilidade.
+
+Ao atingir zero, o cenário é encerrado.
+
+### Teto de altura ultrapassado
+
+O jogo também estabelece um teto de altura baseado na altura máxima esperada para uma AVL com a quantidade atual de nós, acrescido de uma margem de tolerância.
+
+Caso esse limite seja ultrapassado, a estrutura é considerada degradada.
+
+A situação representa didaticamente a aproximação de uma árvore degenerada, na qual o custo da busca pode se aproximar de **O(n)**.
+
+---
+
+# 9. Modos de Jogo
+
+## 🔧 Modo Livre
+
+O Modo Livre é uma evolução direta do visualizador original.
+
+Permite:
+
+* gerar árvores aleatórias;
+* inserir valores manualmente;
+* executar rotações;
+* receber dicas;
+* observar os fatores de balanceamento;
+* visualizar a altura da árvore.
+
+Também existe uma opção de **AVL automática**, utilizada exclusivamente como demonstração e comparação com o resultado esperado.
+
+A função automática permanece desligada por padrão para evitar que o jogador deixe de participar do processo de balanceamento.
+
+---
+
+## 🎮 Modo Jogo
+
+O Modo Jogo transforma o processo de balanceamento em um desafio.
+
+Possui:
+
+* fila de chaves;
+* estabilidade;
+* identificação de nós críticos;
+* teto de altura;
+* rotações realizadas pelo jogador;
+* feedback;
+* condição de vitória;
+* condição de derrota.
+
+---
+
+# 10. Melhorias de Usabilidade
+
+Além da alteração da estrutura de dados, o projeto também recebeu melhorias de interação.
+
+### 🖱️ Controle por mouse
+
+* Arrastar para movimentar a área de visualização;
+* Scroll para aplicar zoom;
+* Clique para selecionar nós.
+
+### ⌨️ Controles de teclado
+
+| Tecla       | Função                             |
+| ----------- | ---------------------------------- |
+| `A`         | Rotação à esquerda                 |
+| `D`         | Rotação à direita                  |
+| `Enter`     | Inserir chave                      |
+| `H`         | Exibir dica                        |
+| `F`         | Enquadrar a árvore                 |
+| `R`         | Gerar árvore aleatória / reiniciar |
+| `C`         | Limpar árvore                      |
+| `G`         | Alternar Modo Jogo / Modo Livre    |
+| `T`         | Alternar AVL automática            |
+| `Q` / `Esc` | Sair                               |
+
+A navegação por teclado existente no modelo também permanece disponível para percorrer pai e filhos.
+
+---
+
+# 11. Distribuição Automática da Árvore
+
+O posicionamento dos nós é recalculado automaticamente após alterações na estrutura.
+
+A distribuição considera:
+
+* ordem dos nós;
+* profundidade;
+* posição horizontal;
+* posição vertical;
+* mudanças causadas por inserções;
+* mudanças causadas por rotações.
+
+O objetivo é evitar sobreposição e manter a estrutura compreensível visualmente durante a execução.
+
+---
+
+# 12. Feedback e Elementos Educacionais
+
+O jogo fornece feedback imediato após as ações do jogador.
+
+Entre os feedbacks possíveis estão:
+
+* indicação de rotação correta;
+* indicação de operação incorreta;
+* identificação do caso de desequilíbrio;
+* indicação de que uma segunda rotação é necessária;
+* dicas sobre a operação adequada.
+
+O Fator de Balanceamento também funciona como um indicador visual do estado da árvore.
+
+---
+
+# 13. Comparação com o Modelo Original
+
+| Modelo original                        | Upgrade AVL                                  |
+| -------------------------------------- | -------------------------------------------- |
+| ABB aleatória                          | ABB com possibilidade de inserção controlada |
+| 100 nós aleatórios                     | Quantidade de nós controlada pelo projeto    |
+| Navegação pelos nós                    | Navegação + interação com a estrutura        |
+| Sem balanceamento                      | Fator de Balanceamento                       |
+| Sem rotações                           | Rotações simples e duplas                    |
+| Sem objetivo de jogo                   | Modo Livre + Modo Jogo                       |
+| Sem condição de derrota                | Estabilidade e teto de altura                |
+| Sem feedback sobre qualidade da árvore | Feedback e dicas                             |
+| Câmera controlada por WASD             | Mouse + zoom                                 |
+| Layout calculado inicialmente          | Layout recalculado após alterações           |
+| Nós representados como caixas          | Nós representados como círculos              |
+| Python 2                               | Python 3                                     |
+
+---
+
+# 14. Alterações Realizadas no Código Original
+
+O arquivo `btree_Original.py`, baseado no projeto original, recebeu adaptações para permitir sua execução em Python 3.
+
+Entre os ajustes realizados estão:
+
+* substituição de `print "texto"` por `print("texto")`;
+* substituição de divisões `/` por `//` quando a intenção era obter divisão inteira;
+* correção do tratamento do valor `0` como nó válido;
+* alteração da geração da raiz para evitar duplicidade;
+* inclusão do bloco:
+
+```python
+if __name__ == "__main__":
+```
+
+Essas alterações foram realizadas para compatibilidade e correção de execução, mantendo o comportamento original sempre que possível.
+
+---
+
+# 15. O que foi Mantido do Modelo Base
+
+O upgrade preserva características fundamentais do projeto original:
+
+* representação de uma ABB;
+* regra de posicionamento menor à esquerda e maior à direita;
+* ausência de valores duplicados;
+* navegação entre pai e filhos;
+* seleção de nós;
+* exibição do valor do nó;
+* exibição da profundidade;
+* geração de árvores aleatórias.
+
+A partir dessa base, foram incorporadas as mecânicas específicas da AVL.
+
+---
+
+# 16. O que foi Acrescentado
+
+O projeto adiciona funcionalidades que não estavam presentes no modelo original:
+
+* inserção manual de chaves;
+* Fator de Balanceamento;
+* cálculo de altura;
+* identificação de nós críticos;
+* rotações simples;
+* rotações duplas;
+* classificação dos quatro casos de rotação;
+* feedback após as operações;
+* sistema de dicas;
+* custo de busca no pior caso;
+* comparação com o custo ideal;
+* sistema de estabilidade;
+* teto de altura;
+* Modo Jogo;
+* condições de vitória e derrota;
+* distribuição automática da árvore;
+* zoom;
+* seleção por mouse;
+* AVL automática para demonstração.
+
+---
+
+# 17. Arquivos do Projeto
+
+| Arquivo                  | Descrição                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `btree_Original.py`               | Código baseado na implementação original de jrenner, adaptado para Python 3. |
+| `btree_update.py`           | Implementação do upgrade, contendo a estrutura AVL e o Modo Jogo.            |
+| `README.md` | Documento de especificação e planejamento do projeto.                        |
+
+---
+
+# 18. Como Executar
+
+## Requisitos
+
+* **Python 3**
+* **Pygame**
+
+Instalação do Pygame:
+
+```bash
+pip install pygame
+```
+
+## Execução
+
+Execute:
+
+```bash
+python btree_update.py
+```
+
+Após iniciar, utilize o mouse e o teclado para interagir com a árvore.
+
+## OU
+
+Execute:
+
+```bash
+mkdir ~/arvore
+mv ~/Downloads/btree_update.py ~/arvore/
+cd ~/arvore
+python btree_update.py
+```
+
+
+
+---
+
+
+# 19. Integrante
+
+### Aluno: Isaque Kirmse Mendonça Soares
+### Disciplina: Estruturas de Dados II 
+### Curso: Ciência da Computação 
+### Data: 29/09/2026
+
+---
+
+# 20. Créditos
+
+### Modelo Base
+
+**jrenner — `graphical-binary-trees`**
+
+https://github.com/jrenner/graphical-binary-trees
+
+A proposta original de visualização de uma Árvore Binária de Busca e o código do projeto base são de jrenner. Este projeto reutiliza essa base e a amplia com funcionalidades voltadas ao ensino de Árvores AVL.
+
+---
+
+# 22. Referências
+
+* JRENNER. *graphical-binary-trees*. GitHub. https://github.com/jrenner/graphical-binary-trees
+* CELES, W.; RANGEL, J. L. *Árvores*. Estruturas de Dados — PUC-Rio.
+* Material das aulas de **Estruturas de Dados II**.
