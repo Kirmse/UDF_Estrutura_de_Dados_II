@@ -4,7 +4,11 @@ Projeto desenvolvido para a disciplina de **Estruturas de Dados II**, do curso d
 
 O projeto transforma uma **Árvore Binária de Busca (ABB)** em uma experiência interativa de aprendizagem sobre **Árvores AVL**, permitindo que o estudante insira chaves, identifique situações de desbalanceamento e execute rotações para restaurar a propriedade de balanceamento da árvore.
 
+---
+
 ![](btree_update_1.png)
+
+
 ![](btree_update_2.png)
 
 ---
