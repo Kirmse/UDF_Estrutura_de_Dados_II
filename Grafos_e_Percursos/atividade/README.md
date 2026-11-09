@@ -17,22 +17,39 @@ Neste projeto, a amizade é recíproca. Portanto, usamos um **grafo não direcio
 ## 3. Conheça os usuários
 | Código | Usuário |
 |---|---|
-| A | Ana |
-| B | Bruno |
-| C | Carla |
-| D | Diego |
-| E | Elisa |
-| F | Felipe |
+| A | Isaque |
+| B | Liz |
+| C | Gabriel |
+| D | Jamilly |
+| E | Pedro |
+| F | Eduarda |
+| G | Vinicius |
+| H | Ana |
+| I | Fernando |
+| J | Lucas |
 
 As amizades são:
-1. Ana — Bruno
-2. Ana — Carla
-3. Bruno — Carla
-4. Bruno — Diego
-5. Carla — Elisa
-6. Diego — Elisa
-7. Diego — Felipe
-8. Elisa — Felipe
+1. Isaque — Liz
+2. Isaque — Gabriel
+3. Isaque — Jamilly
+4. Liz — Gabriel
+5. Gabriel — Jamilly
+6. Gabriel — Ana
+7. Jamilly — Pedro
+8. Jamilly — Eduarda
+9. Jamilly — Ana
+10. Pedro — Vinicius
+11. Eduarda — Fernando
+12. Vinicius — Fernando
+13. Fernando — Lucas
+
+---
+### Resposta
+
+![](imagem1.png)
+
+
+---
 
 ## 4. Passo a passo: desenhe o grafo
 1. Desenhe seis círculos, um para cada usuário.
@@ -48,15 +65,19 @@ Conte quantas linhas chegam a cada círculo. Registre o resultado.
 
 | Usuário | Amigos diretos | Grau |
 |---|---|---:|
-| Ana | __________________ | ____ |
-| Bruno | __________________ | ____ |
-| Carla | __________________ | ____ |
-| Diego | __________________ | ____ |
-| Elisa | __________________ | ____ |
-| Felipe | __________________ | ____ |
+| Isaque | Liz, Gabriel, Jamilly | 3 |
+| Liz | Isaque, Gabriel | 2 |
+| Gabriel | Isaque, Liz, Jamilly, Ana | 4 |
+| Jamilly | Isaque, Gabriel, Pedro, Eduarda, Ana | 5 |
+| Pedro | Jamilly, Vinicius | 2 |
+| Eduarda | Jamilly, Fernando | 2 |
+| Vinicius | Pedro, Fernando | 2 |
+| Ana | Gabriel, Jamilly | 2 |
+| Fernando | Eduarda, Vinicius, Lucas | 3 |
+| Lucas | Fernando | 1 |
 
 **Pergunta 1:** quem tem mais conexões diretas?  
-Resposta: __________________________________________________
+Resposta: Jamilly
 
 ## 6. Passo a passo: calcule o número de amizades
 Some todos os graus. Como cada amizade conecta dois usuários, cada aresta é contada duas vezes.
@@ -64,9 +85,9 @@ Some todos os graus. Como cada amizade conecta dois usuários, cada aresta é co
 **Fórmula:**  
 `Número de arestas = soma dos graus ÷ 2`
 
-1. Soma dos graus: ______
-2. Divida por 2: ______ ÷ 2 = ______
-3. Quantas amizades existem no grafo? ______
+1. Soma dos graus: 3 + 2 + 4 + 5 + 2 + 2 + 2 + 2 + 3 + 1 = 26
+2. Divida por 2: 26 ÷ 2 = 13
+3. Quantas amizades existem no grafo? 13
 
 ## 7. Passo a passo: calcule a densidade
 A densidade compara as amizades existentes com o total de amizades possíveis.
@@ -81,12 +102,13 @@ Em que:
 - `V` = número de vértices.
 
 Substitua os valores:
-`D = 2 × ____ / (____ × (____ − 1))`
+`D = 2 × 13 / (10 × (10 − 1))`
 
-Resultado decimal: __________  
-Resultado percentual: __________ %
+Resultado decimal: 0,2889  
+Resultado percentual: 28,89%
 
 **Interprete:** a rede tem poucas ou muitas das conexões possíveis? Explique com suas palavras.
+**Resposta:** Possui poucas conexões possíveis porque o calculo mostrou que são quase 29% apenas das conexões possíveis.
 
 ________________________________________________________________
 
