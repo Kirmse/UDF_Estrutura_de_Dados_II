@@ -1,6 +1,7 @@
 # Caderno do Estudante
 # Projeto ConectaUDF: redes sociais com grafos
 **Disciplina:** Algoritmos / Matemática Discreta / Ciência de Dados
+
 **Alunos:** Isaque Kirmse / Liz Cristina
 
 ## 1. O desafio
