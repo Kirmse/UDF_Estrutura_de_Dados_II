@@ -190,3 +190,5 @@ Entregue:
 
 ## 12. Pergunta de reflexão
 Duas pessoas ainda não são amigas, mas têm três amigos em comum. Como essa informação poderia ser usada para sugerir uma nova conexão? Quais cuidados de privacidade devem ser considerados ao analisar redes sociais?
+
+**Resposta:** A prória rede social tem o sistema de sugestão de amigos em comum, essas duas pessoas tendo 3 amigos em comum, isso faz com que seja muito provável a indicação da própria plataforma de uma para outra, formando um novo laço de amizade.
