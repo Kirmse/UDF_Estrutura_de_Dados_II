@@ -162,10 +162,11 @@ print(f"Densidade: {densidade:.2%}")
 Encontre um caminho de Ana até Felipe. Cada passagem por uma linha corresponde a uma aresta.
 
 Exemplo de registro:
-`Ana → __________ → __________ → Felipe`
+`Liz → Gabriel → Jamilly → Eduarda → Fernando → Lucas`
 
-- Quantas arestas há no caminho? ______
-- Você encontrou outro caminho com a mesma quantidade de arestas? Qual?
+- Quantas arestas há no caminho? 5
+- Você encontrou outro caminho com a mesma quantidade de arestas? Qual? Sim.
+`Liz → Isaque → Jamilly → Eduarda → Fernando → Lucas`
 
 ________________________________________________________________
 
